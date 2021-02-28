@@ -7,7 +7,7 @@
 
   <arg name="queue_size" default="1"/>
 
-  <arg name="camera_name" default="bw1097"/>
+  <arg name="camera_name" default="oakd"/>
   <arg name="camera_param_uri" default="package://depthai_ros_driver/params/camera/"
     doc="Location of parameters is {camera_param_uri}/{camera_name}/{stream}.yaml"/>
 
@@ -17,7 +17,7 @@
   <arg name="blob_file_config" default="$(find depthai_ros_driver)/resources/mobilenet-ssd.json"/>
 
   <arg name="force_usb2" default="false"/>
-  <arg name="sync_video_meta" default="false"/>
+  <arg name="sync_video_meta" default="true"/>
   <arg name="compute_bbox_depth" default="false"/>
   <arg name="full_fov_nn" default="true"/>
 
@@ -31,19 +31,23 @@
 
   <!--
   Possible streams:
+  * 'color' - 4K color camera preview - unknown stream requested
   * 'left' - left mono camera preview
   * 'right' - right mono camera preview
+  * 'rectified_left' - rectified left camera preview
+  * 'rectified_right' - rectified right camera preview
   * 'previewout' - preview of stream sent to the NN
   * 'metaout' - CNN output tensors
   * 'depth' - the raw depth map, disparity converted to real life distance
   * 'disparity' - disparity map, the diaparity between left and right cameras, in pixels
   * 'disparity_color' - disparity map colorized
-  * 'meta_d2h' - device metadata stream
+  * 'meta_d2h' - device metadata stream - nodelet: /home/ubuntu/.hunter/_Base/062a19a/f61e57a/91b3a04/Install/include/boost/optional/optional.hpp:1217: boost::optional<T>::pointer_type boost::optional<T>::operator->() [with T = FrameMetadata; boost::optional<T>::pointer_type = FrameMetadata*]: Assertion `this->is_initialized()' failed.
+
   * 'video' - H.264/H.265 encoded color camera frames
   * 'jpegout' - JPEG encoded color camera frames
-  * 'object_tracker' - Object tracker results
+  * 'object_tracker' - Object tracker results - requested CNN resources overlaps with RGB camera
   -->
-  <arg name="stream_list" default="[left, right, metaout, previewout, disparity, disparity_color, depth, video]"/>
+  <arg name="stream_list" default="[left, right, rectified_left, rectified_right, metaout, previewout, disparity, disparity_color, depth, video, jpegout]"/>
 
   <group ns="$(arg ns)">
     <node if="$(arg manager)" pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager">
@@ -75,12 +79,12 @@
       <param name="nn_engines" value="$(arg nn_engines)"/>
 
       <param name="queue_size" value="$(arg queue_size)"/>
-    </node>
+    </node> 
   </group>
 
   <!-- Publish tf -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find depthai_ros_driver)/urdf/$(arg camera_name).urdf.xacro'"/>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  <!-- param name="robot_description" command="$(find xacro)/xacro '$(find depthai_ros_driver)/urdf/$(arg camera_name).urdf.xacro'"/>
+  <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="tf_prefix" value=""/>
-  </node>
+  </node -->
 </launch>

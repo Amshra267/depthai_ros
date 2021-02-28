@@ -104,7 +104,7 @@ void DepthAIBase<Node>::publishImageMsg(const HostDataPacket& packet, Stream typ
                 toMerge[i] = cv::Mat(cols, cols, CV_8UC1, data + i * offset);
             }
             cv::merge(toMerge, cvImg.image);
-            encoding = "bgr8";
+            encoding = "rgb8";
             break;
         }
         case Stream::JPEG_OUT:
@@ -131,7 +131,7 @@ void DepthAIBase<Node>::publishImageMsg(const HostDataPacket& packet, Stream typ
                     cv::applyColorMap(monoImg, bgrImg, cv::COLORMAP_HOT);
                     // cv::applyColorMap(monoImg, bgrImg, cv::COLORMAP_JET);
                     cvImg.image = bgrImg;
-                    encoding = "bgr8";
+                    encoding = "16UC1";
                 }
             } else {  // disparity_color
                 cvImg.image = cv::Mat(rows, cols, CV_8UC3, data);

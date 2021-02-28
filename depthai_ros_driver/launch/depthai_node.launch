@@ -3,9 +3,9 @@
   <arg name="ns" default="depthai"/>
   <arg name="node_name" default="driver"/>
 
-  <arg name="queue_size" default="1"/>
+  <arg name="queue_size" default="10"/>
 
-  <arg name="camera_name" default="bw1097"/>
+  <arg name="camera_name" default="oakd"/>
   <arg name="camera_param_uri" default="package://depthai_ros_driver/params/camera/"
     doc="Location of parameters is {camera_param_uri}/{camera_name}/{stream}.yaml"/>
 
@@ -14,8 +14,8 @@
   <arg name="blob_file" default="$(find depthai_ros_driver)/resources/mobilenet_ssd.blob"/>
   <arg name="blob_file_config" default="$(find depthai_ros_driver)/resources/mobilenet-ssd.json"/>
 
-  <arg name="force_usb2" default="false"/>
-  <arg name="sync_video_meta" default="false"/>
+  <arg name="force_usb2" default="true"/>
+  <arg name="sync_video_meta" default="true"/>
   <arg name="compute_bbox_depth" default="false"/>
   <arg name="full_fov_nn" default="true"/>
 
@@ -33,8 +33,11 @@
 
   <!--
   Possible streams:
+  * 'color' - 4K color camera preview
   * 'left' - left mono camera preview
   * 'right' - right mono camera preview
+  * 'rectified_left' - rectified left camera preview
+  * 'rectified_right' - rectified right camera preview
   * 'previewout' - preview of stream sent to the NN
   * 'metaout' - CNN output tensors
   * 'depth' - the raw depth map, disparity converted to real life distance
@@ -45,10 +48,12 @@
   * 'jpegout' - JPEG encoded color camera frames
   * 'object_tracker' - Object tracker results
   -->
-  <arg name="stream_list" default="[left, right, metaout, previewout, disparity, disparity_color, depth, video]"/>
+  <arg name="stream_list" default="[left, right, rectified_left, rectified_right, metaout, previewout, disparity, disparity_color, depth, video]"/>
 
-  <!-- Launch the Depthai node -->
+
   <group ns="$(arg ns)">
+  
+    <!-- Launch the DepthAI node -->
     <node pkg="depthai_ros_driver" type="depthai_ros_driver" name="$(arg node_name)" output="screen" launch-prefix="$(arg launch_prefix)">
       <param name="camera_name" value="$(arg camera_name)"/>
 
@@ -77,8 +82,8 @@
   </group>
 
   <!-- Publish tf -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find depthai_ros_driver)/urdf/$(arg camera_name).urdf.xacro'"/>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  <!-- param name="robot_description" command="$(find xacro)/xacro '$(find depthai_ros_driver)/urdf/$(arg camera_name).urdf.xacro'"/>
+  <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="tf_prefix" value=""/>
-  </node>
+  </node -->
 </launch>

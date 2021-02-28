@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<robot name="oakd" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:arg name="camera_name"          default="oakd" />
+    <xacro:arg name="camera_model"         default="BW1098OAK" />
+    <xacro:arg name="base_frame"           default="depthai_base" />
+    <xacro:arg name="left_frame"           default="left_camera" />
+    <xacro:arg name="left_optical_frame"   default="left" />
+    <xacro:arg name="right_frame"          default="right_camera" />
+    <xacro:arg name="right_optical_frame"  default="right" />
+    <xacro:arg name="rgb_frame"            default="rgb_camera" />
+    <xacro:arg name="rgb_optical_frame"    default="rgb" />
+    
+    <xacro:arg name="cam_pos_x"     default="0.0" />
+    <xacro:arg name="cam_pos_y"     default="0.0" />
+    <xacro:arg name="cam_pos_z"     default="0.0" />
+    <xacro:arg name="cam_roll"      default="0.0" />
+    <xacro:arg name="cam_pitch"     default="0.0" />
+    <xacro:arg name="cam_yaw"       default="0.0" />
+
+    <!-- Properties -->
+    <xacro:property name="M_PI"     value="3.1415926535897931" />
+    <xacro:property name="model"    value="$(arg camera_model)" />
+
+    <xacro:if value="${model == 'BW1098OAK'}">
+    <xacro:property name="baseline" value="0.075" />
+    </xacro:if>
+    
+    <!-- Macro for identity tranform -->
+    <xacro:macro name="identity" params="joint_name parent child">
+      <joint name="${joint_name}" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="${parent}"/>
+        <child link="${child}"/>
+      </joint>
+      <link name="${child}"/>
+    </xacro:macro>
+
+    <!-- Device base_link -->
+    <link name="$(arg base_frame)">
+        <visual>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0.0 ${M_PI/2}"/>
+            <geometry>
+                <mesh filename="package://depthai_ros_driver/urdf/models/${model}.dae" />
+            </geometry>
+            <material name="zed_mat">
+                <color rgba="0.8 0.8 0.8 0.8"/>
+            </material>
+        </visual>
+    </link>
+
+    <joint name="$(arg camera_name)_center_joint" type="fixed">
+        <parent link="$(arg base_frame)"/>
+        <child link="$(arg rgb_frame)"/>
+        <origin xyz="$(arg cam_pos_x) $(arg cam_pos_y) $(arg cam_pos_z)" rpy="$(arg cam_roll) $(arg cam_pitch) $(arg cam_yaw)" />
+    </joint>
+
+    <!-- RGB Camera -->
+    <link name="$(arg rgb_frame)" />
+    <joint name="$(arg camera_name)_rgb_camera_joint" type="fixed">
+        <parent link="$(arg base_frame)"/>
+        <child link="$(arg rgb_frame)"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="$(arg rgb_optical_frame)"/>
+    <joint name="$(arg camera_name)_rgb_camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+        <parent link="$(arg rgb_frame)"/>
+        <child link="$(arg rgb_optical_frame)"/>
+    </joint>
+
+    <!-- Left Camera -->
+    <link name="$(arg left_frame)" />
+    <joint name="$(arg camera_name)_left_camera_joint" type="fixed">
+        <parent link="$(arg base_frame)"/>
+        <child link="$(arg left_frame)"/>
+        <origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="$(arg left_optical_frame)"/>
+    <joint name="$(arg camera_name)_left_camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+        <parent link="$(arg left_frame)"/>
+        <child link="$(arg left_optical_frame)"/>
+    </joint>
+
+    
+    <!-- right Camera -->
+    <link name="$(arg right_frame)" />
+    <joint name="$(arg camera_name)_right_camera_joint" type="fixed">
+        <parent link="$(arg base_frame)"/>
+        <child link="$(arg right_frame)"/>
+        <origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="$(arg right_optical_frame)"/>
+    <joint name="$(arg camera_name)_right_camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+        <parent link="$(arg right_frame)"/>
+        <child link="$(arg right_optical_frame)"/>
+    </joint>
+    
+    <!-- Trivial optical frames -->
+    <xacro:identity joint_name="left2rectified_left" parent="$(arg left_optical_frame)" child="rectified_left"/>
+    <xacro:identity joint_name="right2rectified_right" parent="$(arg right_optical_frame)" child="rectified_right"/>
+    <xacro:identity joint_name="rgb2depth" parent="$(arg rgb_optical_frame)" child="depth"/>
+    <xacro:identity joint_name="depth2depth_raw" parent="depth" child="depth_raw"/>
+    <xacro:identity joint_name="rgb2disparity" parent="$(arg rgb_optical_frame)" child="disparity"/>
+    <xacro:identity joint_name="disparity2disparity_color" parent="disparity" child="disparity_color"/>
+
+
+</robot>
